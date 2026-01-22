@@ -15,7 +15,7 @@ import { YjsModule } from './yjs/yjs.module';
 
     // TypeORM configuration for SQLite (easy setup, no external DB needed)
     TypeOrmModule.forRoot({
-      type: 'sqlite',
+      type: 'better-sqlite3',
       database: 'symbiotic-tasks.db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true, // Auto-create tables (dev only)
