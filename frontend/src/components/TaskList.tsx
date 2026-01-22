@@ -76,7 +76,7 @@ export function TaskList() {
     <div className="task-manager">
       <header className="header">
         <div>
-          <h1>🌀 Symbiotic Task Manager</h1>
+          <h1>✅ RightTask</h1>
           <p className="subtitle">
             Real-time collaborative tasks powered by CRDTs • {tasks.length} tasks
           </p>

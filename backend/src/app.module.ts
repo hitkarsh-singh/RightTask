@@ -13,7 +13,7 @@ import { YjsModule } from './yjs/yjs.module';
       isGlobal: true,
     }),
 
-    // TypeORM configuration for SQLite (easy setup, no external DB needed)
+    // TypeORM configuration for better-sqlite3 (easy setup, no external DB needed)
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
       database: 'symbiotic-tasks.db',

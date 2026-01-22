@@ -27,7 +27,7 @@ export function Register({ onToggleMode }: { onToggleMode: () => void }) {
     <div className="auth-container">
       <div className="auth-card">
         <h2>✨ Register</h2>
-        <p className="auth-subtitle">Create your Symbiotic Task Manager account</p>
+        <p className="auth-subtitle">Create your RightTask account</p>
 
         {error && <div className="error-message">{error}</div>}
 
