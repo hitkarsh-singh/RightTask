@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import * as Y from 'yjs';
-import { io, Socket } from 'socket.io-client';
-import { Task } from '../types';
+import type { Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
+import type { Task } from '../types';
 
 export function useYjs(roomId: string) {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -58,7 +59,7 @@ export function useYjs(roomId: string) {
     tasksArray.observe(observeHandler);
 
     function updateTasksFromYjs() {
-      const tasksData = tasksArray.toArray();
+      const tasksData = tasksArray.toArray() as Task[];
       setTasks(tasksData);
     }
 

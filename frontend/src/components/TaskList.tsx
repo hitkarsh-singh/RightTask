@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Task } from '../types';
+import type { Task } from '../types';
 import { tasksApi } from '../api/tasks';
 import { useYjs } from '../hooks/useYjs';
 import { useAuth } from '../context/AuthContext';
