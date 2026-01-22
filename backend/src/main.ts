@@ -7,7 +7,7 @@ async function bootstrap() {
 
   // Enable CORS for frontend communication
   app.enableCors({
-    origin: 'http://localhost:5173', // Vite default port
+    origin: ['http://localhost:5173', 'https://righttask.netlify.app'],
     credentials: true,
   });
 
