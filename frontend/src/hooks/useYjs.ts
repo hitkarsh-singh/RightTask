@@ -19,7 +19,7 @@ export function useYjs(roomId: string) {
     tasksArrayRef.current = tasksArray;
 
     // Connect to WebSocket
-    const socket = io('http://localhost:3000', {
+    const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3000', {
       transports: ['websocket'],
     });
     socketRef.current = socket;
