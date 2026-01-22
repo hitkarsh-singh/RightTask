@@ -2,6 +2,16 @@
 
 This guide covers deploying the Symbiotic Task Manager to free-tier cloud services.
 
+> **⚠️ IMPORTANT NOTE (January 2026):**
+> This deployment guide was created for Phase 1-3. Phase 5 (Neo4j graph features) has been implemented but **NOT YET TESTED** in production deployment. The app will work without Neo4j (graph features will be disabled), but if you want graph visualization in production, you'll need to:
+> 1. Set up Neo4j Aura (free tier)
+> 2. Add Neo4j environment variables to Railway
+> 3. Test that the connection works in production
+>
+> Local development with Neo4j has been tested and works. Production deployment with Neo4j is untested.
+>
+> **📋 For complete deployment testing, see:** [`docs/DEPLOYMENT_TESTING_CHECKLIST.md`](docs/DEPLOYMENT_TESTING_CHECKLIST.md)
+
 ---
 
 ## 📋 Deployment Overview
@@ -10,7 +20,8 @@ This guide covers deploying the Symbiotic Task Manager to free-tier cloud servic
 |-----------|----------|-----------|-------------|
 | Frontend | Netlify | 100 GB bandwidth/month | 5 min |
 | Backend | Railway/Render | 500 hours/month | 10 min |
-| Database | Turso (SQLite edge) | 9 GB storage | 5 min |
+| Database (CRUD) | Turso (SQLite edge) | 9 GB storage | 5 min |
+| Database (Graph) | Neo4j Aura | 200k nodes (optional) | 10 min |
 
 ---
 
@@ -27,7 +38,7 @@ This guide covers deploying the Symbiotic Task Manager to free-tier cloud servic
    cd ~/Downloads/symbiotic-task-manager
    git init
    git add .
-   git commit -m "Initial commit - Phase 1-3"
+   git commit -m "Initial commit - Phase 1-3, 5 (Neo4j graph features)"
 
    # Create repo on GitHub, then:
    git remote add origin https://github.com/YOUR_USERNAME/symbiotic-task-manager.git
@@ -88,6 +99,16 @@ This guide covers deploying the Symbiotic Task Manager to free-tier cloud servic
      PORT=3000
      NODE_ENV=production
      ```
+
+3b. **Optional: Configure Neo4j (for graph features)**:
+   - Follow the guide in `docs/NEO4J_SETUP.md` to create a Neo4j Aura instance
+   - Add to Railway environment variables:
+     ```
+     NEO4J_URI=neo4j+s://xxxxx.databases.neo4j.io
+     NEO4J_USERNAME=neo4j
+     NEO4J_PASSWORD=<your-neo4j-password>
+     ```
+   - **Note:** Graph features will be disabled if Neo4j variables are not provided
 
 4. **Generate Domain**:
    - In Railway, go to "Settings" → "Networking"

@@ -3,12 +3,15 @@ import type { Task } from '../types';
 import { tasksApi } from '../api/tasks';
 import { useYjs } from '../hooks/useYjs';
 import { useAuth } from '../context/AuthContext';
+import { TaskGraphVisualization } from './TaskGraphVisualization';
+import { DependencyEditor } from './DependencyEditor';
 
 export function TaskList() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [graphRefreshKey, setGraphRefreshKey] = useState(0);
   const { user, logout } = useAuth();
 
   // Use Yjs for real-time collaboration
@@ -67,9 +70,16 @@ export function TaskList() {
     try {
       await tasksApi.delete(taskId);
       deleteTask(taskId);
+      // Refresh graph after deletion
+      setGraphRefreshKey(prev => prev + 1);
     } catch (err: any) {
       console.error('Failed to delete task:', err);
     }
+  };
+
+  const handleDependencyChange = () => {
+    // Refresh graph when dependencies change
+    setGraphRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -119,6 +129,14 @@ export function TaskList() {
         </form>
       </div>
 
+      {/* Graph Visualization */}
+      <div className="graph-section">
+        <div className="graph-header">
+          <h2>📊 Task Dependencies</h2>
+        </div>
+        <TaskGraphVisualization key={graphRefreshKey} />
+      </div>
+
       <div className="tasks-container">
         <h2>📋 Your Tasks</h2>
 
@@ -159,6 +177,13 @@ export function TaskList() {
                     {new Date(task.createdAt).toLocaleDateString()}
                   </span>
                 </div>
+
+                {/* Dependency Editor */}
+                <DependencyEditor
+                  taskId={task.id}
+                  allTasks={tasks}
+                  onDependencyChange={handleDependencyChange}
+                />
               </div>
             ))}
           </div>

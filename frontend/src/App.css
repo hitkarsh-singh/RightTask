@@ -321,6 +321,135 @@ body {
   color: #a0aec0;
 }
 
+/* Graph Visualization */
+.graph-section {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 16px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.graph-header h2 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 20px;
+}
+
+.graph-visualization {
+  width: 100%;
+  min-height: 500px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f7fafc;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.graph-visualization svg {
+  display: block;
+}
+
+.graph-tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Dependency Editor */
+.dependency-editor {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.dependency-editor h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 10px;
+}
+
+.dependency-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.dependency-tag {
+  background: #edf2f7;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #4a5568;
+}
+
+.dependency-tag .remove-btn {
+  background: none;
+  border: none;
+  color: #e53e3e;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  line-height: 1;
+}
+
+.dependency-tag .remove-btn:hover {
+  color: #c53030;
+}
+
+.add-dependency {
+  display: flex;
+  gap: 8px;
+}
+
+.add-dependency select {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.add-dependency button {
+  padding: 6px 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.add-dependency button:hover:not(:disabled) {
+  background: #5568d3;
+}
+
+.add-dependency button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .header {
@@ -331,5 +460,9 @@ body {
 
   .tasks-grid {
     grid-template-columns: 1fr;
+  }
+
+  .graph-visualization {
+    min-height: 400px;
   }
 }

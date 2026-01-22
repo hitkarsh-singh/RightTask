@@ -10,6 +10,9 @@ export interface Task {
   description?: string;
   completed: boolean;
   priority: number;
+  dependencyIds?: string[];
+  dueDate?: string;
+  estimatedHours?: number;
   createdAt: string;
   updatedAt: string;
   userId: string;

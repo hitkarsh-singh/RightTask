@@ -4,20 +4,27 @@ A modern, real-time collaborative task management application powered by **CRDTs
 
 ## ✨ Features
 
-### Phase 1-3 (Completed)
+### Phase 1-3, 5 (Completed)
+**Note:** Phase 4 (Elixir/Phoenix) was skipped - went directly to Phase 5
 - ✅ **Real-time Collaboration**: Multiple users can edit tasks simultaneously with zero conflicts using Yjs CRDTs
 - ✅ **JWT Authentication**: Secure user registration and login
 - ✅ **RESTful Task API**: Full CRUD operations for task management
 - ✅ **WebSocket Sync**: Instant task synchronization across all connected clients
 - ✅ **Modern UI**: Responsive, gradient-based design with smooth animations
 - ✅ **TypeScript**: Full type safety across frontend and backend
+- ✅ **Task Dependencies**: Connect tasks with DEPENDS_ON relationships
+- ✅ **Cycle Detection**: Prevents circular dependencies automatically
+- ✅ **Graph Visualization**: Interactive D3.js force-directed graph of task dependencies
+- ✅ **Neo4j Integration**: Graph database for relationship tracking and analysis
+- ✅ **Dependency Editor**: Add/remove task dependencies with real-time validation
 
 ### Future Roadmap (See ROADMAP.md)
+- 🔮 Task contagion animation with ripple effects
+- 🔮 Critical path detection and highlighting
+- 🔮 Skills system with task requirements and recommendations
 - 🔮 Elixir/Phoenix integration for massive WebSocket scalability
-- 🔮 Neo4j graph database for task dependency visualization
 - 🔮 ML-powered task prioritization
 - 🔮 Peer-to-peer "energy stream" co-working channel
-- 🔮 Graph-based "task contagion" visualization
 
 ## 🏗️ Architecture
 
@@ -28,37 +35,40 @@ symbiotic-task-manager/
 │   │   ├── auth/     # JWT authentication
 │   │   ├── tasks/    # Task CRUD operations
 │   │   ├── users/    # User management
+│   │   ├── graph/    # Neo4j service & graph sync
+│   │   ├── dependencies/  # Dependency management & cycle detection
 │   │   └── yjs/      # Yjs WebSocket gateway (CRDT sync)
 │   └── symbiotic-tasks.db  # SQLite database
 │
 ├── frontend/         # React + TypeScript + Vite
 │   ├── src/
 │   │   ├── api/      # API client (axios)
-│   │   ├── components/  # React components
+│   │   ├── components/  # React components (including D3 graph)
 │   │   ├── context/  # Auth context
 │   │   ├── hooks/    # Custom hooks (useYjs)
 │   │   └── types/    # TypeScript types
 │   └── ...
 │
-└── docs/            # Additional documentation
+└── docs/            # Additional documentation (includes NEO4J_SETUP.md)
 ```
 
 ## 🛠️ Tech Stack
 
-### Current (Phase 1-3)
+### Current (Phase 1-3, 5)
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | **Frontend** | React + TypeScript + Vite | Fast, modern UI with full type safety |
+| **Visualization** | D3.js | Interactive force-directed graph visualization |
 | **State Management** | React Context API | User authentication state |
 | **Real-time Sync** | Yjs + Socket.IO | CRDT-based conflict-free collaboration |
 | **Backend API** | NestJS + TypeScript | RESTful API with dependency injection |
 | **WebSocket** | Socket.IO (NestJS) | Real-time bidirectional communication |
-| **Database** | SQLite + TypeORM | Lightweight, file-based database |
+| **Database (CRUD)** | SQLite + TypeORM | Lightweight, file-based database |
+| **Database (Graph)** | Neo4j Aura | Graph database for dependencies & relationships |
 | **Authentication** | JWT + Passport | Stateless token-based auth |
 
 ### Future Stack (Roadmap)
 - **Elixir/Phoenix**: Scalable WebSocket handling (millions of connections)
-- **Neo4j**: Graph database for task relationships
 - **Python/FastAPI**: ML service for priority prediction
 - **TensorFlow.js**: Client-side ML inference
 - **WebRTC**: Peer-to-peer collaboration features
@@ -105,12 +115,24 @@ npm run dev
 ```
 Frontend will run on `http://localhost:5173`
 
+### Optional: Neo4j Setup (for Graph Features)
+
+To enable task dependency visualization:
+
+1. Follow the guide in **[docs/NEO4J_SETUP.md](docs/NEO4J_SETUP.md)**
+2. Add Neo4j credentials to `backend/.env`
+3. Restart the backend server
+
+**Note:** The app works without Neo4j, but graph visualization features will be disabled.
+
 ### First-time Usage
 
 1. Open `http://localhost:5173` in your browser
 2. Click "Register" to create an account
 3. Create some tasks
-4. Open another browser window (or incognito) to see real-time collaboration!
+4. Add dependencies between tasks (if Neo4j is configured)
+5. Watch the interactive graph visualization update in real-time!
+6. Open another browser window (or incognito) to see real-time collaboration!
 
 ## 🎯 Key Features Explained
 
@@ -129,6 +151,27 @@ This app uses **Yjs**, a CRDT library, to enable truly conflict-free real-time e
 3. Local changes are sent as Yjs updates
 4. Server broadcasts updates to all connected clients
 5. Yjs automatically merges changes conflict-free
+
+### Task Dependencies & Graph Visualization
+
+RightTask uses a **dual database strategy** to combine the best of both worlds:
+
+- **SQLite**: Fast CRUD operations for tasks
+- **Neo4j**: Graph relationships for dependencies
+
+**Key Features:**
+- **Dependency Tracking**: Link tasks with "depends on" relationships
+- **Cycle Detection**: Automatically prevents circular dependencies
+- **Visual Graph**: Interactive D3.js force-directed graph shows task relationships
+- **Color Coding**: Green (completed), Blue (active), Purple (selected)
+- **Interactive**: Drag nodes, hover for details, click to select
+
+**How it works:**
+1. User creates dependency via dropdown in task card
+2. Backend validates (no cycles, no self-dependencies)
+3. Relationship stored in both SQLite (IDs) and Neo4j (graph edges)
+4. D3.js visualization updates in real-time
+5. Graph syncs automatically when tasks or dependencies change
 
 ### Architecture Decisions
 
@@ -170,9 +213,12 @@ This project demonstrates:
 ## 📖 Documentation
 
 - **PROGRESS.md**: Completed implementation steps
-- **ROADMAP.md**: Future feature roadmap (Elixir, Neo4j, ML, etc.)
+- **ROADMAP.md**: Future feature roadmap (Elixir, ML, etc.)
 - **HANDOFF.md**: Guide for resuming development in future sessions
-- **docs/**: Detailed technical documentation
+- **DEPLOYMENT.md**: General deployment guide (Railway + Netlify)
+- **docs/NEO4J_SETUP.md**: Step-by-step Neo4j Aura setup guide
+- **docs/DEPLOYMENT_TESTING_CHECKLIST.md**: Complete production testing checklist
+- **docs/**: Additional technical documentation
 
 ## 🤝 Contributing
 

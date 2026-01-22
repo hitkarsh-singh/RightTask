@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { GraphModule } from './graph/graph.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TasksModule } from './tasks/tasks.module';
+import { DependenciesModule } from './dependencies/dependencies.module';
 import { YjsModule } from './yjs/yjs.module';
 
 @Module({
@@ -22,10 +25,17 @@ import { YjsModule } from './yjs/yjs.module';
       logging: false,
     }),
 
+    // Event emitter for event-driven architecture
+    EventEmitterModule.forRoot(),
+
+    // Graph database module (must come before feature modules)
+    GraphModule,
+
     // Feature modules
     AuthModule,
     UsersModule,
     TasksModule,
+    DependenciesModule,
     YjsModule,
   ],
 })
