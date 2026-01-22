@@ -73,16 +73,31 @@ export class TasksService {
   // Event listeners for graph sync
   @OnEvent('task.created')
   async handleTaskCreated(task: Task) {
-    await this.graphSyncService.syncTaskToGraph(task);
+    try {
+      await this.graphSyncService.syncTaskToGraph(task);
+    } catch (error) {
+      // Graph sync is optional - don't crash if it fails
+      console.error('Failed to sync task to graph:', error.message);
+    }
   }
 
   @OnEvent('task.updated')
   async handleTaskUpdated(task: Task) {
-    await this.graphSyncService.syncTaskToGraph(task);
+    try {
+      await this.graphSyncService.syncTaskToGraph(task);
+    } catch (error) {
+      // Graph sync is optional - don't crash if it fails
+      console.error('Failed to sync task to graph:', error.message);
+    }
   }
 
   @OnEvent('task.deleted')
   async handleTaskDeleted(taskId: string) {
-    await this.graphSyncService.deleteTaskFromGraph(taskId);
+    try {
+      await this.graphSyncService.deleteTaskFromGraph(taskId);
+    } catch (error) {
+      // Graph sync is optional - don't crash if it fails
+      console.error('Failed to delete task from graph:', error.message);
+    }
   }
 }
