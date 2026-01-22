@@ -1,6 +1,10 @@
-# 🌀 Symbiotic Task Manager
+# 🌀 RightTask (Symbiotic Task Manager)
 
 A modern, real-time collaborative task management application powered by **CRDTs** (Conflict-free Replicated Data Types) using **Yjs**. Built as a learning project and portfolio piece to explore cutting-edge web technologies.
+
+**🚀 LIVE DEMO:** https://righttask.netlify.app
+
+> **Status:** Deployed to production! Phase 1-3, 5 complete and fully functional with Neo4j graph visualization.
 
 ## ✨ Features
 

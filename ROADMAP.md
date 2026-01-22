@@ -52,11 +52,15 @@ This roadmap outlines the future evolution of the Symbiotic Task Manager from th
 
 ---
 
-## ✅ Phase 5: Neo4j Graph Database (COMPLETED)
+## ✅ Phase 5: Neo4j Graph Database (COMPLETED & DEPLOYED)
 
 **Goal**: Add graph database to model task dependencies and visualize task relationships.
 
-**Status**: ✅ MVP Completed (January 2026)
+**Status**: ✅ MVP Completed & Deployed to Production (January 22, 2026)
+**Production URLs:**
+- Live App: https://righttask.netlify.app
+- Backend API: https://righttask-production.up.railway.app
+- Neo4j: Connected and verified working in production
 
 ### Graph Schema (Implemented)
 ```cypher
