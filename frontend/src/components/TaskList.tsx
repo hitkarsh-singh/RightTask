@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Task } from '../types';
 import { tasksApi } from '../api/tasks';
-import { useYjs } from '../hooks/useYjs';
+import { usePhoenixYjs as useYjs } from '../hooks/usePhoenixYjs';
 import { useAuth } from '../context/AuthContext';
 import { TaskGraphVisualization } from './TaskGraphVisualization';
 import { DependencyEditor } from './DependencyEditor';
