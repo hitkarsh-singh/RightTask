@@ -19,7 +19,9 @@ import { YjsModule } from './yjs/yjs.module';
     // TypeORM configuration for better-sqlite3 (easy setup, no external DB needed)
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
-      database: 'symbiotic-tasks.db',
+      database: process.env.NODE_ENV === 'production'
+        ? '/app/data/symbiotic-tasks.db'  // Persisted in Railway volume
+        : 'symbiotic-tasks.db',           // Local development
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true, // Auto-create tables (dev only)
       logging: false,
