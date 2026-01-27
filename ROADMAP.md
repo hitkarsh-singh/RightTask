@@ -101,13 +101,34 @@ CREATE CONSTRAINT user_id FOR (u:User) REQUIRE u.id IS UNIQUE;
 - [x] Color-coded nodes (green=completed, blue=active, purple=selected)
 - [x] Interactive features (drag nodes, hover tooltips, click to select)
 
-### Features Deferred to Phase 5.5
+---
+
+## ✅ Phase 5.5: Enhanced Graph Features (COMPLETED)
+
+**Goal**: Add advanced graph analytics and visualizations for task management.
+
+**Status**: ✅ Completed (January 27, 2026)
+
+### Features Completed
+- [x] **Critical Path Detection**: Algorithm to find longest path through task graph based on estimatedHours
+- [x] **BLOCKS Relationship**: Inverse of DEPENDS_ON automatically maintained in Neo4j
+- [x] **Impact Analysis**: Calculate which tasks are affected by delays
+- [x] **Enhanced Visualization**:
+  - Critical path highlighting (gold nodes and edges)
+  - Impact visualization (orange nodes)
+  - Different edge styles for DEPENDS_ON (solid) vs BLOCKS (dashed)
+  - Interactive controls to toggle features
+  - Real-time critical path metrics display
+- [x] **Estimated Hours**: UI for setting and displaying task duration estimates
+- [x] **API Endpoints**:
+  - GET /graph/critical-path
+  - GET /graph/impact/:taskId
+
+### Features Deferred to Future Phases
 - [ ] Task contagion animation with ripple effects
-- [ ] Critical path detection (requires estimatedHours usage)
-- [ ] BLOCKS relationship (inverse of DEPENDS_ON)
 - [ ] Team skill graph (User)-[:HAS_SKILL]->(Skill)
 - [ ] Recommendation engine: "Who should work on this task?"
-- [ ] Impact analysis dashboard
+- [ ] Impact analysis dashboard (currently shown inline)
 
 ---
 

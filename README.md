@@ -4,29 +4,42 @@ A modern, real-time collaborative task management application powered by **CRDTs
 
 **🚀 LIVE DEMO:** https://righttask.netlify.app
 
-> **Status:** Deployed to production! Phase 1-3, 5 complete and fully functional with Neo4j graph visualization.
+> **Status:** Deployed to production! Phases 1-5.5 complete with Phoenix WebSocket server, Neo4j graph database, and advanced graph analytics.
 
 ## ✨ Features
 
-### Phase 1-3, 5 (Completed)
-**Note:** Phase 4 (Elixir/Phoenix) was skipped - went directly to Phase 5
-- ✅ **Real-time Collaboration**: Multiple users can edit tasks simultaneously with zero conflicts using Yjs CRDTs
+### Core Features (Phases 1-5.5 Completed)
+
+**Real-Time Collaboration:**
+- ✅ **Phoenix WebSocket Server**: Handles 10,000+ concurrent connections with Elixir/OTP fault tolerance
+- ✅ **Yjs CRDTs**: Multiple users can edit tasks simultaneously with zero conflicts
+- ✅ **Binary Protocol**: Optimized for low latency and bandwidth efficiency
+- ✅ **Room-Based Architecture**: Automatic cleanup and process isolation
+
+**Task Management:**
 - ✅ **JWT Authentication**: Secure user registration and login
 - ✅ **RESTful Task API**: Full CRUD operations for task management
-- ✅ **WebSocket Sync**: Instant task synchronization across all connected clients
 - ✅ **Modern UI**: Responsive, gradient-based design with smooth animations
 - ✅ **TypeScript**: Full type safety across frontend and backend
+- ✅ **Estimated Hours**: Set task duration estimates for project planning
+
+**Graph & Dependencies:**
 - ✅ **Task Dependencies**: Connect tasks with DEPENDS_ON relationships
+- ✅ **BLOCKS Relationship**: Inverse dependency tracking (automatic)
 - ✅ **Cycle Detection**: Prevents circular dependencies automatically
-- ✅ **Graph Visualization**: Interactive D3.js force-directed graph of task dependencies
+- ✅ **Critical Path Detection**: Finds longest path through task graph
+- ✅ **Impact Analysis**: Shows which tasks are affected by delays
+- ✅ **Interactive Graph Visualization**: D3.js force-directed graph with:
+  - Critical path highlighting (gold nodes & edges)
+  - Impact visualization (orange nodes)
+  - Different edge styles (solid vs dashed)
+  - Toggle controls for features
+  - Enhanced tooltips with badges
 - ✅ **Neo4j Integration**: Graph database for relationship tracking and analysis
-- ✅ **Dependency Editor**: Add/remove task dependencies with real-time validation
 
 ### Future Roadmap (See ROADMAP.md)
 - 🔮 Task contagion animation with ripple effects
-- 🔮 Critical path detection and highlighting
-- 🔮 Skills system with task requirements and recommendations
-- 🔮 Elixir/Phoenix integration for massive WebSocket scalability
+- 🔮 Team skills graph with task recommendations
 - 🔮 ML-powered task prioritization
 - 🔮 Peer-to-peer "energy stream" co-working channel
 
