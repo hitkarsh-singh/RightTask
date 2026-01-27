@@ -64,50 +64,15 @@ export function usePhoenixYjs(roomId: string) {
     function updateTasksFromYjs() {
       const tasksData = tasksArray.toArray() as Task[];
 
-      // Remove duplicates by task ID (keep the last occurrence)
-      const uniqueTasks = tasksData.reduce((acc, task) => {
-        const existingIndex = acc.findIndex(t => t.id === task.id);
-        if (existingIndex !== -1) {
-          acc[existingIndex] = task; // Replace with latest version
-        } else {
-          acc.push(task);
-        }
-        return acc;
-      }, [] as Task[]);
-
-      setTasks(uniqueTasks);
-    }
-
-    // Clean up duplicates in Yjs array
-    function cleanupDuplicates() {
-      if (!tasksArrayRef.current || !docRef.current) return;
-
-      const tasksData = tasksArrayRef.current.toArray() as Task[];
-      const seenIds = new Set<string>();
-      const duplicateIndices: number[] = [];
-
-      // Find duplicate indices (keep first occurrence)
-      tasksData.forEach((task, index) => {
-        if (seenIds.has(task.id)) {
-          duplicateIndices.push(index);
-        } else {
-          seenIds.add(task.id);
-        }
+      // Simple deduplication at display layer only
+      const seen = new Map<string, Task>();
+      tasksData.forEach(task => {
+        seen.set(task.id, task); // Keep latest version
       });
 
-      // Remove duplicates in reverse order to maintain indices
-      if (duplicateIndices.length > 0) {
-        console.log('Cleaning up', duplicateIndices.length, 'duplicate tasks');
-        docRef.current.transact(() => {
-          duplicateIndices.reverse().forEach(index => {
-            tasksArrayRef.current?.delete(index, 1);
-          });
-        });
-      }
+      setTasks(Array.from(seen.values()));
     }
 
-    // Initial cleanup and update
-    cleanupDuplicates();
     updateTasksFromYjs();
 
     // Cleanup
@@ -121,15 +86,12 @@ export function usePhoenixYjs(roomId: string) {
 
   const addTask = (task: Task) => {
     if (tasksArrayRef.current) {
-      // Check if task already exists to prevent duplicates
+      // Check if task already exists
       const existingIndex = tasksArrayRef.current.toArray().findIndex((t: Task) => t.id === task.id);
       if (existingIndex === -1) {
         tasksArrayRef.current.push([task]);
-      } else {
-        // Task already exists, update it instead
-        console.warn('Task already exists, updating instead of adding:', task.id);
-        updateTask(task.id, task);
       }
+      // If it exists, do nothing (prevent duplicates)
     }
   };
 

@@ -13,6 +13,16 @@ export function TaskGraphVisualization() {
   const [impactAnalysis, setImpactAnalysis] = useState<ImpactAnalysis | null>(null);
   const [showCriticalPath, setShowCriticalPath] = useState(true);
   const [showImpact, setShowImpact] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Auto-refresh graph every 5 seconds to pick up changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRefreshTrigger(prev => prev + 1);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch graph data
   useEffect(() => {
@@ -35,7 +45,7 @@ export function TaskGraphVisualization() {
     };
 
     loadGraph();
-  }, []);
+  }, [refreshTrigger]);
 
   // Fetch impact analysis when node is selected
   useEffect(() => {
@@ -335,6 +345,22 @@ export function TaskGraphVisualization() {
       <div style={{ marginBottom: '15px', display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
         {/* Controls */}
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+          <button
+            onClick={() => setRefreshTrigger(prev => prev + 1)}
+            style={{
+              padding: '6px 12px',
+              background: '#4299e1',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+            title="Refresh graph"
+          >
+            🔄 Refresh
+          </button>
+
           <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
             <input
               type="checkbox"
