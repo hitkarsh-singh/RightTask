@@ -63,9 +63,51 @@ export function usePhoenixYjs(roomId: string) {
 
     function updateTasksFromYjs() {
       const tasksData = tasksArray.toArray() as Task[];
-      setTasks(tasksData);
+
+      // Remove duplicates by task ID (keep the last occurrence)
+      const uniqueTasks = tasksData.reduce((acc, task) => {
+        const existingIndex = acc.findIndex(t => t.id === task.id);
+        if (existingIndex !== -1) {
+          acc[existingIndex] = task; // Replace with latest version
+        } else {
+          acc.push(task);
+        }
+        return acc;
+      }, [] as Task[]);
+
+      setTasks(uniqueTasks);
     }
 
+    // Clean up duplicates in Yjs array
+    function cleanupDuplicates() {
+      if (!tasksArrayRef.current || !docRef.current) return;
+
+      const tasksData = tasksArrayRef.current.toArray() as Task[];
+      const seenIds = new Set<string>();
+      const duplicateIndices: number[] = [];
+
+      // Find duplicate indices (keep first occurrence)
+      tasksData.forEach((task, index) => {
+        if (seenIds.has(task.id)) {
+          duplicateIndices.push(index);
+        } else {
+          seenIds.add(task.id);
+        }
+      });
+
+      // Remove duplicates in reverse order to maintain indices
+      if (duplicateIndices.length > 0) {
+        console.log('Cleaning up', duplicateIndices.length, 'duplicate tasks');
+        docRef.current.transact(() => {
+          duplicateIndices.reverse().forEach(index => {
+            tasksArrayRef.current?.delete(index, 1);
+          });
+        });
+      }
+    }
+
+    // Initial cleanup and update
+    cleanupDuplicates();
     updateTasksFromYjs();
 
     // Cleanup
@@ -79,18 +121,32 @@ export function usePhoenixYjs(roomId: string) {
 
   const addTask = (task: Task) => {
     if (tasksArrayRef.current) {
-      tasksArrayRef.current.push([task]);
+      // Check if task already exists to prevent duplicates
+      const existingIndex = tasksArrayRef.current.toArray().findIndex((t: Task) => t.id === task.id);
+      if (existingIndex === -1) {
+        tasksArrayRef.current.push([task]);
+      } else {
+        // Task already exists, update it instead
+        console.warn('Task already exists, updating instead of adding:', task.id);
+        updateTask(task.id, task);
+      }
     }
   };
 
   const updateTask = (taskId: string, updates: Partial<Task>) => {
-    if (tasksArrayRef.current) {
-      const index = tasksArrayRef.current.toArray().findIndex((t: Task) => t.id === taskId);
-      if (index !== -1) {
-        const currentTask = tasksArrayRef.current.get(index);
-        tasksArrayRef.current.delete(index, 1);
-        tasksArrayRef.current.insert(index, [{ ...currentTask, ...updates }]);
-      }
+    if (tasksArrayRef.current && docRef.current) {
+      // Use transaction to make delete + insert atomic
+      docRef.current.transact(() => {
+        if (tasksArrayRef.current) {
+          const index = tasksArrayRef.current.toArray().findIndex((t: Task) => t.id === taskId);
+          if (index !== -1) {
+            const currentTask = tasksArrayRef.current.get(index);
+            const updatedTask = { ...currentTask, ...updates };
+            tasksArrayRef.current.delete(index, 1);
+            tasksArrayRef.current.insert(index, [updatedTask]);
+          }
+        }
+      });
     }
   };
 
