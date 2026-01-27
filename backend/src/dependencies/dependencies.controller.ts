@@ -61,4 +61,19 @@ export class GraphController {
   async getUserGraph(@Request() req) {
     return this.dependenciesService.getTaskGraph(req.user.userId);
   }
+
+  @Get('critical-path')
+  async getCriticalPath(@Request() req) {
+    return this.dependenciesService.getCriticalPath(req.user.userId);
+  }
+
+  @Get('impact/:taskId')
+  async getImpactAnalysis(
+    @Param('taskId') taskId: string,
+    @Query('delayHours') delayHours: string,
+    @Request() req,
+  ) {
+    const delay = delayHours ? parseFloat(delayHours) : 0;
+    return this.dependenciesService.getImpactAnalysis(taskId, req.user.userId, delay);
+  }
 }

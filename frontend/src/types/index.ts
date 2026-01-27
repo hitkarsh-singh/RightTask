@@ -38,6 +38,7 @@ export interface CreateTaskRequest {
   title: string;
   description?: string;
   priority?: number;
+  estimatedHours?: number;
 }
 
 export interface UpdateTaskRequest {

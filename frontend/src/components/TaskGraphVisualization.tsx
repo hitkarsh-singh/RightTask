@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { graphApi } from '../api/graph';
-import type { TaskGraph, GraphNode, GraphEdge } from '../types/graph';
+import type { TaskGraph, GraphNode, GraphEdge, CriticalPath, ImpactAnalysis } from '../types/graph';
 
 export function TaskGraphVisualization() {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -9,6 +9,10 @@ export function TaskGraphVisualization() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [criticalPath, setCriticalPath] = useState<CriticalPath | null>(null);
+  const [impactAnalysis, setImpactAnalysis] = useState<ImpactAnalysis | null>(null);
+  const [showCriticalPath, setShowCriticalPath] = useState(true);
+  const [showImpact, setShowImpact] = useState(false);
 
   // Fetch graph data
   useEffect(() => {
@@ -16,8 +20,12 @@ export function TaskGraphVisualization() {
       try {
         setLoading(true);
         setError(null);
-        const data = await graphApi.getTaskGraph();
-        setGraphData(data);
+        const [graph, critical] = await Promise.all([
+          graphApi.getTaskGraph(),
+          graphApi.getCriticalPath(),
+        ]);
+        setGraphData(graph);
+        setCriticalPath(critical);
       } catch (err) {
         console.error('Failed to load graph:', err);
         setError('Failed to load task graph');
@@ -28,6 +36,17 @@ export function TaskGraphVisualization() {
 
     loadGraph();
   }, []);
+
+  // Fetch impact analysis when node is selected
+  useEffect(() => {
+    if (selectedNode && showImpact) {
+      graphApi.getImpactAnalysis(selectedNode)
+        .then(setImpactAnalysis)
+        .catch(err => console.error('Failed to load impact analysis:', err));
+    } else {
+      setImpactAnalysis(null);
+    }
+  }, [selectedNode, showImpact]);
 
   // Initialize D3 force simulation
   useEffect(() => {
@@ -45,8 +64,16 @@ export function TaskGraphVisualization() {
       .attr('height', height)
       .attr('viewBox', [0, 0, width, height]);
 
+    // Mark nodes as critical or impacted
+    const criticalTaskIds = showCriticalPath && criticalPath ? criticalPath.criticalTaskIds : [];
+    const impactedTaskIds = showImpact && impactAnalysis ? impactAnalysis.impactedTaskIds : [];
+
     // Create a copy of nodes to avoid mutating the original data
-    const nodes: GraphNode[] = graphData.nodes.map(d => ({ ...d }));
+    const nodes: GraphNode[] = graphData.nodes.map(d => ({
+      ...d,
+      isCritical: criticalTaskIds.includes(d.id),
+      isImpacted: impactedTaskIds.includes(d.id),
+    }));
     const edges: GraphEdge[] = graphData.edges.map(d => ({ ...d }));
 
     // Create force simulation
@@ -59,8 +86,11 @@ export function TaskGraphVisualization() {
       .force('collision', d3.forceCollide().radius(40));
 
     // Create arrow markers for edges
-    svg.append('defs').append('marker')
-      .attr('id', 'arrowhead')
+    const defs = svg.append('defs');
+
+    // DEPENDS_ON arrow (blue)
+    defs.append('marker')
+      .attr('id', 'arrowhead-depends')
       .attr('viewBox', '-0 -5 10 10')
       .attr('refX', 25)
       .attr('refY', 0)
@@ -69,7 +99,33 @@ export function TaskGraphVisualization() {
       .attr('markerHeight', 6)
       .append('svg:path')
       .attr('d', 'M 0,-5 L 10,0 L 0,5')
-      .attr('fill', '#999');
+      .attr('fill', '#4299e1');
+
+    // BLOCKS arrow (red/orange)
+    defs.append('marker')
+      .attr('id', 'arrowhead-blocks')
+      .attr('viewBox', '-0 -5 10 10')
+      .attr('refX', 25)
+      .attr('refY', 0)
+      .attr('orient', 'auto')
+      .attr('markerWidth', 6)
+      .attr('markerHeight', 6)
+      .append('svg:path')
+      .attr('d', 'M 0,-5 L 10,0 L 0,5')
+      .attr('fill', '#f56565');
+
+    // Critical path arrow (gold)
+    defs.append('marker')
+      .attr('id', 'arrowhead-critical')
+      .attr('viewBox', '-0 -5 10 10')
+      .attr('refX', 25)
+      .attr('refY', 0)
+      .attr('orient', 'auto')
+      .attr('markerWidth', 8)
+      .attr('markerHeight', 8)
+      .append('svg:path')
+      .attr('d', 'M 0,-5 L 10,0 L 0,5')
+      .attr('fill', '#fbbf24');
 
     // Draw edges
     const linkGroup = svg.append('g').attr('class', 'links');
@@ -78,9 +134,34 @@ export function TaskGraphVisualization() {
       .data(edges)
       .enter()
       .append('line')
-      .attr('stroke', '#999')
-      .attr('stroke-width', 2)
-      .attr('marker-end', 'url(#arrowhead)');
+      .attr('stroke', (d: GraphEdge) => {
+        // Check if this edge is on the critical path
+        const sourceNode = nodes.find(n => typeof d.source === 'string' ? n.id === d.source : n.id === (d.source as GraphNode).id);
+        const targetNode = nodes.find(n => typeof d.target === 'string' ? n.id === d.target : n.id === (d.target as GraphNode).id);
+
+        if (sourceNode?.isCritical && targetNode?.isCritical && d.type === 'DEPENDS_ON') {
+          return '#fbbf24'; // Gold for critical path
+        }
+
+        return d.type === 'DEPENDS_ON' ? '#4299e1' : '#f56565';
+      })
+      .attr('stroke-width', (d: GraphEdge) => {
+        const sourceNode = nodes.find(n => typeof d.source === 'string' ? n.id === d.source : n.id === (d.source as GraphNode).id);
+        const targetNode = nodes.find(n => typeof d.target === 'string' ? n.id === d.target : n.id === (d.target as GraphNode).id);
+
+        return sourceNode?.isCritical && targetNode?.isCritical && d.type === 'DEPENDS_ON' ? 3 : 2;
+      })
+      .attr('stroke-dasharray', (d: GraphEdge) => d.type === 'BLOCKS' ? '5,5' : '0')
+      .attr('marker-end', (d: GraphEdge) => {
+        const sourceNode = nodes.find(n => typeof d.source === 'string' ? n.id === d.source : n.id === (d.source as GraphNode).id);
+        const targetNode = nodes.find(n => typeof d.target === 'string' ? n.id === d.target : n.id === (d.target as GraphNode).id);
+
+        if (sourceNode?.isCritical && targetNode?.isCritical && d.type === 'DEPENDS_ON') {
+          return 'url(#arrowhead-critical)';
+        }
+
+        return d.type === 'DEPENDS_ON' ? 'url(#arrowhead-depends)' : 'url(#arrowhead-blocks)';
+      });
 
     // Draw nodes
     const nodeGroup = svg.append('g').attr('class', 'nodes');
@@ -89,17 +170,27 @@ export function TaskGraphVisualization() {
       .data(nodes)
       .enter()
       .append('circle')
-      .attr('r', (d: GraphNode) => 20 + d.priority * 2)
+      .attr('r', (d: GraphNode) => {
+        const baseSize = 20 + d.priority * 2;
+        return d.isCritical ? baseSize + 5 : baseSize;
+      })
       .attr('fill', (d: GraphNode) => {
         if (d.completed) return '#48bb78'; // Green for completed
         if (selectedNode === d.id) return '#9f7aea'; // Purple for selected
+        if (d.isCritical) return '#fbbf24'; // Gold for critical path
+        if (d.isImpacted) return '#f97316'; // Orange for impacted
         return '#4299e1'; // Blue for active
       })
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 2)
+      .attr('stroke', (d: GraphNode) => {
+        if (d.isCritical) return '#fbbf24';
+        if (d.isImpacted) return '#f97316';
+        return '#fff';
+      })
+      .attr('stroke-width', (d: GraphNode) => d.isCritical ? 3 : 2)
       .style('cursor', 'pointer')
       .on('click', (_event: any, d: GraphNode) => {
         setSelectedNode(d.id);
+        setShowImpact(true);
       })
       .on('mouseover', handleMouseOver)
       .on('mouseout', handleMouseOut)
@@ -141,19 +232,31 @@ export function TaskGraphVisualization() {
       // Highlight node
       d3.select(event.currentTarget)
         .attr('stroke', '#f56565')
-        .attr('stroke-width', 3);
+        .attr('stroke-width', 4);
 
       // Show tooltip
+      const badges: string[] = [];
+      if (d.isCritical) badges.push('<span style="color: #fbbf24;">★ Critical Path</span>');
+      if (d.isImpacted) badges.push('<span style="color: #f97316;">⚠ Impacted</span>');
+
       d3.select('body')
         .append('div')
         .attr('class', 'graph-tooltip')
         .style('position', 'absolute')
         .style('left', event.pageX + 10 + 'px')
         .style('top', event.pageY + 10 + 'px')
+        .style('background', 'rgba(0, 0, 0, 0.8)')
+        .style('color', '#fff')
+        .style('padding', '8px 12px')
+        .style('border-radius', '4px')
+        .style('font-size', '12px')
+        .style('pointer-events', 'none')
+        .style('z-index', '1000')
         .html(`
           <strong>${d.label}</strong><br/>
           Priority: ${d.priority}<br/>
           Status: ${d.completed ? 'Completed' : 'In Progress'}
+          ${badges.length > 0 ? '<br/>' + badges.join('<br/>') : ''}
         `);
     }
 
@@ -195,7 +298,7 @@ export function TaskGraphVisualization() {
     return () => {
       simulation.stop();
     };
-  }, [graphData, selectedNode]);
+  }, [graphData, selectedNode, criticalPath, impactAnalysis, showCriticalPath, showImpact]);
 
   if (loading) {
     return (
@@ -229,6 +332,94 @@ export function TaskGraphVisualization() {
 
   return (
     <div className="graph-visualization">
+      <div style={{ marginBottom: '15px', display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+        {/* Controls */}
+        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={showCriticalPath}
+              onChange={(e) => setShowCriticalPath(e.target.checked)}
+            />
+            <span>Show Critical Path</span>
+          </label>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={showImpact}
+              onChange={(e) => setShowImpact(e.target.checked)}
+            />
+            <span>Show Impact Analysis</span>
+          </label>
+        </div>
+
+        {/* Critical Path Info */}
+        {showCriticalPath && criticalPath && criticalPath.totalHours > 0 && (
+          <div style={{
+            padding: '8px 12px',
+            background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+            color: '#fff',
+            borderRadius: '6px',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}>
+            ★ Critical Path: {criticalPath.totalHours} hours ({criticalPath.criticalTaskIds.length} tasks)
+          </div>
+        )}
+
+        {/* Impact Info */}
+        {showImpact && impactAnalysis && impactAnalysis.totalImpactedTasks > 0 && (
+          <div style={{
+            padding: '8px 12px',
+            background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+            color: '#fff',
+            borderRadius: '6px',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}>
+            ⚠ {impactAnalysis.totalImpactedTasks} tasks would be impacted
+          </div>
+        )}
+      </div>
+
+      {/* Legend */}
+      <div style={{
+        marginBottom: '15px',
+        padding: '12px',
+        background: '#f7fafc',
+        borderRadius: '6px',
+        fontSize: '12px',
+        display: 'flex',
+        gap: '15px',
+        flexWrap: 'wrap'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#48bb78' }}></div>
+          <span>Completed</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#4299e1' }}></div>
+          <span>Active</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fbbf24', border: '2px solid #fbbf24' }}></div>
+          <span>Critical Path</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#f97316' }}></div>
+          <span>Impacted</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <div style={{ width: '30px', height: '2px', background: '#4299e1' }}></div>
+          <span>Depends On</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <div style={{ width: '30px', height: '2px', background: '#f56565', backgroundImage: 'repeating-linear-gradient(90deg, #f56565 0, #f56565 5px, transparent 5px, transparent 10px)' }}></div>
+          <span>Blocks</span>
+        </div>
+      </div>
+
       <svg ref={svgRef}></svg>
     </div>
   );

@@ -26,6 +26,7 @@ export class GraphSyncService {
             t.description = $description,
             t.completed = $completed,
             t.priority = $priority,
+            t.estimatedHours = $estimatedHours,
             t.createdAt = datetime($createdAt),
             t.updatedAt = datetime($updatedAt)
         MERGE (u)-[:OWNS]->(t)
@@ -38,6 +39,7 @@ export class GraphSyncService {
         description: task.description || '',
         completed: task.completed,
         priority: task.priority,
+        estimatedHours: task.estimatedHours || 0,
         createdAt: task.createdAt.toISOString(),
         updatedAt: task.updatedAt.toISOString(),
       });
@@ -74,6 +76,7 @@ export class GraphSyncService {
   /**
    * Create dependency relationship in Neo4j
    * taskId DEPENDS_ON dependsOnTaskId
+   * Also creates inverse BLOCKS relationship: dependsOnTaskId BLOCKS taskId
    */
   async createDependency(taskId: string, dependsOnTaskId: string): Promise<void> {
     if (!this.neo4jService.isConnected()) {
@@ -86,10 +89,11 @@ export class GraphSyncService {
         MATCH (t1:Task {id: $taskId})
         MATCH (t2:Task {id: $dependsOnTaskId})
         MERGE (t1)-[:DEPENDS_ON]->(t2)
+        MERGE (t2)-[:BLOCKS]->(t1)
       `;
 
       await this.neo4jService.executeWrite(query, { taskId, dependsOnTaskId });
-      this.logger.debug(`Created dependency: ${taskId} DEPENDS_ON ${dependsOnTaskId}`);
+      this.logger.debug(`Created dependency: ${taskId} DEPENDS_ON ${dependsOnTaskId} (and BLOCKS inverse)`);
     } catch (error) {
       this.logger.error('Failed to create dependency in Neo4j:', error.message);
       throw error;
@@ -98,6 +102,7 @@ export class GraphSyncService {
 
   /**
    * Remove dependency relationship from Neo4j
+   * Also removes the inverse BLOCKS relationship
    */
   async removeDependency(taskId: string, dependsOnTaskId: string): Promise<void> {
     if (!this.neo4jService.isConnected()) {
@@ -107,12 +112,13 @@ export class GraphSyncService {
 
     try {
       const query = `
-        MATCH (t1:Task {id: $taskId})-[r:DEPENDS_ON]->(t2:Task {id: $dependsOnTaskId})
-        DELETE r
+        MATCH (t1:Task {id: $taskId})-[r1:DEPENDS_ON]->(t2:Task {id: $dependsOnTaskId})
+        OPTIONAL MATCH (t2)-[r2:BLOCKS]->(t1)
+        DELETE r1, r2
       `;
 
       await this.neo4jService.executeWrite(query, { taskId, dependsOnTaskId });
-      this.logger.debug(`Removed dependency: ${taskId} DEPENDS_ON ${dependsOnTaskId}`);
+      this.logger.debug(`Removed dependency: ${taskId} DEPENDS_ON ${dependsOnTaskId} (and BLOCKS inverse)`);
     } catch (error) {
       this.logger.error('Failed to remove dependency from Neo4j:', error.message);
     }

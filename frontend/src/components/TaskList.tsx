@@ -9,6 +9,7 @@ import { DependencyEditor } from './DependencyEditor';
 export function TaskList() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
+  const [newTaskEstimatedHours, setNewTaskEstimatedHours] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [graphRefreshKey, setGraphRefreshKey] = useState(0);
@@ -43,6 +44,7 @@ export function TaskList() {
       const task = await tasksApi.create({
         title: newTaskTitle,
         description: newTaskDescription || undefined,
+        estimatedHours: newTaskEstimatedHours || 0,
       });
 
       // Add to Yjs (will sync to other clients)
@@ -50,6 +52,7 @@ export function TaskList() {
 
       setNewTaskTitle('');
       setNewTaskDescription('');
+      setNewTaskEstimatedHours(0);
     } catch (err: any) {
       setError('Failed to create task');
     } finally {
@@ -123,6 +126,21 @@ export function TaskList() {
             />
           </div>
 
+          <div className="form-group">
+            <label style={{ fontSize: '14px', marginBottom: '5px', display: 'block' }}>
+              Estimated Hours (for critical path calculation):
+            </label>
+            <input
+              type="number"
+              value={newTaskEstimatedHours}
+              onChange={(e) => setNewTaskEstimatedHours(parseInt(e.target.value) || 0)}
+              placeholder="0"
+              min="0"
+              step="1"
+              style={{ width: '150px' }}
+            />
+          </div>
+
           <button type="submit" disabled={loading} className="btn-primary">
             {loading ? 'Creating...' : 'Create Task'}
           </button>
@@ -164,6 +182,20 @@ export function TaskList() {
 
                 {task.description && (
                   <p className="task-description">{task.description}</p>
+                )}
+
+                {task.estimatedHours && task.estimatedHours > 0 && (
+                  <div style={{
+                    fontSize: '13px',
+                    color: '#718096',
+                    margin: '8px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}>
+                    <span>⏱️</span>
+                    <span>Est. {task.estimatedHours} hour{task.estimatedHours !== 1 ? 's' : ''}</span>
+                  </div>
                 )}
 
                 <div className="task-footer">

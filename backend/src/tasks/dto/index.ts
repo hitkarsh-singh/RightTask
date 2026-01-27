@@ -12,6 +12,10 @@ export class CreateTaskDto {
   @IsNumber()
   @IsOptional()
   priority?: number;
+
+  @IsNumber()
+  @IsOptional()
+  estimatedHours?: number;
 }
 
 export class UpdateTaskDto {
