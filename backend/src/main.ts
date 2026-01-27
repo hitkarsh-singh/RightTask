@@ -7,7 +7,11 @@ async function bootstrap() {
 
   // Enable CORS for frontend communication
   app.enableCors({
-    origin: ['http://localhost:5173', 'https://righttask.netlify.app'],
+    origin: [
+      'http://localhost:5173',
+      'https://righttask.netlify.app',  // TODO: Replace with your actual Netlify URL
+      // Add your actual Netlify URL here
+    ],
     credentials: true,
   });
 

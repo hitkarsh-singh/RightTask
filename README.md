@@ -216,13 +216,20 @@ This project demonstrates:
 
 ## 📖 Documentation
 
-- **PROGRESS.md**: Completed implementation steps
-- **ROADMAP.md**: Future feature roadmap (Elixir, ML, etc.)
-- **HANDOFF.md**: Guide for resuming development in future sessions
-- **DEPLOYMENT.md**: General deployment guide (Railway + Netlify)
-- **docs/NEO4J_SETUP.md**: Step-by-step Neo4j Aura setup guide
-- **docs/DEPLOYMENT_TESTING_CHECKLIST.md**: Complete production testing checklist
-- **docs/**: Additional technical documentation
+**Main Documentation (root):**
+- **PROGRESS.md**: Complete implementation history (all phases)
+- **ROADMAP.md**: Future features and planned phases
+
+**Technical Documentation (docs/):**
+- **[GETTING_STARTED.md](docs/GETTING_STARTED.md)**: Quick start guide for local development
+- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)**: Complete deployment guide + production status
+- **[PHOENIX.md](docs/PHOENIX.md)**: Phoenix WebSocket server guide (Phase 4)
+- **[NEO4J_SETUP.md](docs/NEO4J_SETUP.md)**: Neo4j Aura setup (Phase 5)
+- **[HANDOFF.md](docs/HANDOFF.md)**: Developer resumption guide
+- **[PROJECT_SUMMARY.md](docs/PROJECT_SUMMARY.md)**: Project achievements summary
+- **[ORIGINAL_VISION.md](docs/ORIGINAL_VISION.md)**: Original project vision
+- **[TROUBLESHOOTING_PRODUCTION.md](docs/TROUBLESHOOTING_PRODUCTION.md)**: Production troubleshooting
+- **[DEPLOYMENT_TESTING_CHECKLIST.md](docs/DEPLOYMENT_TESTING_CHECKLIST.md)**: Testing checklist
 
 ## 🤝 Contributing
 
