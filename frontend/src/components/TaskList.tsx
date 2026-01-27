@@ -44,7 +44,7 @@ export function TaskList() {
       const task = await tasksApi.create({
         title: newTaskTitle,
         description: newTaskDescription || undefined,
-        estimatedHours: newTaskEstimatedHours || 0,
+        ...(newTaskEstimatedHours > 0 && { estimatedHours: newTaskEstimatedHours }),
       });
 
       // Add to Yjs (will sync to other clients)
