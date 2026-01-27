@@ -53,6 +53,9 @@ export function TaskList() {
       setNewTaskTitle('');
       setNewTaskDescription('');
       setNewTaskEstimatedHours(0);
+
+      // Refresh graph after adding task
+      setGraphRefreshKey(prev => prev + 1);
     } catch (err: any) {
       setError('Failed to create task');
     } finally {
@@ -64,6 +67,9 @@ export function TaskList() {
     try {
       const updatedTask = await tasksApi.toggleComplete(task.id);
       updateTask(task.id, updatedTask);
+
+      // Refresh graph after completing task
+      setGraphRefreshKey(prev => prev + 1);
     } catch (err: any) {
       console.error('Failed to toggle task:', err);
     }
@@ -152,7 +158,7 @@ export function TaskList() {
         <div className="graph-header">
           <h2>📊 Task Dependencies</h2>
         </div>
-        <TaskGraphVisualization key={graphRefreshKey} />
+        <TaskGraphVisualization refreshTrigger={graphRefreshKey} />
       </div>
 
       <div className="tasks-container">

@@ -3,7 +3,11 @@ import * as d3 from 'd3';
 import { graphApi } from '../api/graph';
 import type { TaskGraph, GraphNode, GraphEdge, CriticalPath, ImpactAnalysis } from '../types/graph';
 
-export function TaskGraphVisualization() {
+interface TaskGraphVisualizationProps {
+  refreshTrigger?: number;
+}
+
+export function TaskGraphVisualization({ refreshTrigger = 0 }: TaskGraphVisualizationProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [graphData, setGraphData] = useState<TaskGraph | null>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -13,18 +17,8 @@ export function TaskGraphVisualization() {
   const [impactAnalysis, setImpactAnalysis] = useState<ImpactAnalysis | null>(null);
   const [showCriticalPath, setShowCriticalPath] = useState(true);
   const [showImpact, setShowImpact] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Auto-refresh graph every 5 seconds to pick up changes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRefreshTrigger(prev => prev + 1);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Fetch graph data
+  // Fetch graph data when refreshTrigger changes
   useEffect(() => {
     const loadGraph = async () => {
       try {
@@ -84,7 +78,16 @@ export function TaskGraphVisualization() {
       isCritical: criticalTaskIds.includes(d.id),
       isImpacted: impactedTaskIds.includes(d.id),
     }));
-    const edges: GraphEdge[] = graphData.edges.map(d => ({ ...d }));
+
+    // Reverse arrow direction for DEPENDS_ON to show precedence
+    // If B depends on A, show A -> B (A must be done before B)
+    const edges: GraphEdge[] = graphData.edges.map(d => {
+      if (d.type === 'DEPENDS_ON') {
+        // Swap source and target to show precedence order
+        return { source: d.target, target: d.source, type: d.type };
+      }
+      return { ...d };
+    });
 
     // Create force simulation
     const simulation = d3.forceSimulation(nodes)
@@ -345,22 +348,6 @@ export function TaskGraphVisualization() {
       <div style={{ marginBottom: '15px', display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
         {/* Controls */}
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <button
-            onClick={() => setRefreshTrigger(prev => prev + 1)}
-            style={{
-              padding: '6px 12px',
-              background: '#4299e1',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-            title="Refresh graph"
-          >
-            🔄 Refresh
-          </button>
-
           <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
             <input
               type="checkbox"
